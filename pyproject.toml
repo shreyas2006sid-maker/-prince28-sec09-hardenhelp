@@ -8,8 +8,11 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.20.1",
+    "asyncpg>=0.32.0",
     "fastapi>=0.164.0",
     "pydantic-settings>=2.16.3",
+    "sqlalchemy[asyncio]>=2.1.9",
     "uvicorn[standard]>=0.54.0",
 ]
 
@@ -22,12 +25,14 @@ dev = [
     "httpx>=0.28.1",
     "pre-commit>=4.7.0",
     "pytest>=9.2.0",
+    "pytest-asyncio>=1.5.0",
     "ruff>=0.17.5",
 ]
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["migrations/versions"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
@@ -36,3 +41,4 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 testpaths = ["tests"]
 addopts = "-q"
 filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+asyncio_default_fixture_loop_scope = "function"
