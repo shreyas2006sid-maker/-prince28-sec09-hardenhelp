@@ -21,12 +21,10 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
             logging.exception(
                 "request failed",
                 extra={
-                    "extra": {
-                        "request_id": request_id,
-                        "method": request.method,
-                        "path": request.url.path,
-                        "duration_ms": duration_ms,
-                    }
+                    "request_id": request_id,
+                    "method": request.method,
+                    "path": request.url.path,
+                    "duration_ms": duration_ms,
                 },
             )
             raise
@@ -36,13 +34,11 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         logging.info(
             "request completed",
             extra={
-                "extra": {
-                    "request_id": request_id,
-                    "method": request.method,
-                    "path": request.url.path,
-                    "status": response.status_code,
-                    "duration_ms": duration_ms,
-                }
+                "request_id": request_id,
+                "method": request.method,
+                "path": request.url.path,
+                "status": response.status_code,
+                "duration_ms": duration_ms,
             },
         )
         return response

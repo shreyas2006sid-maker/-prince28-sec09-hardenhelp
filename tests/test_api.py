@@ -27,6 +27,17 @@ def test_ready_is_503_when_data_file_missing(tmp_path):
         assert test_client.get("/ready").status_code == 503
 
 
+def test_ready_is_200_at_minimum_record_count(tmp_path):
+    records = [{"id": f"{index:03}", "title": f"Rule {index}"} for index in range(1, 21)]
+    path = tmp_path / "records.json"
+    path.write_text(json.dumps(records), encoding="utf-8")
+    settings = Settings(app_env="ci", data_file=path)
+    with TestClient(create_app(settings)) as test_client:
+        response = test_client.get("/ready")
+        assert response.status_code == 200
+        assert response.json()["records_count"] == 20
+
+
 def test_list_documents_paginates(client):
     response = client.get("/v1/documents", params={"limit": 2})
     body = response.json()
@@ -38,6 +49,19 @@ def test_list_documents_paginates(client):
 def test_search_filters_records(client):
     response = client.get("/v1/documents", params={"q": "beta"})
     assert [document["id"] for document in response.json()["items"]] == ["002"]
+
+
+def test_stig_id_filter_is_exact(tmp_path):
+    records = [
+        {"id": "001", "title": "One", "stig_id": "U_CAN-001"},
+        {"id": "002", "title": "Two", "stig_id": "U_CAN-0010"},
+    ]
+    path = tmp_path / "records.json"
+    path.write_text(json.dumps(records), encoding="utf-8")
+    settings = Settings(app_env="ci", data_file=path)
+    with TestClient(create_app(settings), raise_server_exceptions=False) as test_client:
+        response = test_client.get("/v1/documents", params={"stig_id": "U_CAN-001"})
+        assert [document["id"] for document in response.json()["items"]] == ["001"]
 
 
 def test_get_document_found(client):
@@ -71,6 +95,11 @@ def test_app_refuses_to_start_without_app_env(monkeypatch):
     monkeypatch.delenv("APP_ENV", raising=False)
     with pytest.raises(ValidationError):
         Settings(_env_file=None)
+
+
+def test_app_refuses_invalid_app_env():
+    with pytest.raises(ValidationError):
+        Settings(app_env="prod", _env_file=None)
 
 
 def test_stats_counts_severity(tmp_path):

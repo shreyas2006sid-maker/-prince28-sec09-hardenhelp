@@ -10,8 +10,33 @@ class JsonFormatter(logging.Formatter):
         payload = {
             "level": record.levelname,
             "msg": record.getMessage(),
-            **getattr(record, "extra", {}),
         }
+        for key, value in getattr(record, "__dict__", {}).items():
+            if key not in {
+                "args",
+                "created",
+                "exc_info",
+                "exc_text",
+                "filename",
+                "funcName",
+                "levelname",
+                "levelno",
+                "lineno",
+                "module",
+                "msecs",
+                "message",
+                "msg",
+                "name",
+                "pathname",
+                "process",
+                "processName",
+                "relativeCreated",
+                "stack_info",
+                "taskName",
+                "thread",
+                "threadName",
+            }:
+                payload[key] = value
         return json.dumps(payload, default=str)
 
 
