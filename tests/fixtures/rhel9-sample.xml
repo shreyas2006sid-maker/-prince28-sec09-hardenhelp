@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Benchmark xmlns="http://checklists.nist.gov/xccdf/1.2" id="xccdf_org.ssgproject.content_benchmark_RHEL-9">
+  <title>RHEL 9 synthetic comparison test</title>
+  <Rule id="xccdf_org.ssgproject.content_rule_auditd_enabled" severity="medium">
+    <title>Audit daemon is enabled</title>
+    <description>Second OS synthetic rule sharing a CCI for comparison testing.</description>
+    <ident system="https://cce.mitre.org">CCI-000001</ident>
+    <check system="http://oval.mitre.org/XMLSchema/oval-definitions-5">
+      <check-content>Check that the audit daemon is enabled.</check-content>
+      <check-content-ref href="ssg-rhel9-oval.xml" name="oval:ssg-auditd_enabled:def:1"/>
+    </check>
+    <fixtext>Enable the audit daemon per this release's source content.</fixtext>
+  </Rule>
+</Benchmark>

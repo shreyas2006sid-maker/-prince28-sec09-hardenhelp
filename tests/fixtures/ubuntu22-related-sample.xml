@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Benchmark xmlns="http://checklists.nist.gov/xccdf/1.2" id="xccdf_mil.disa.stig_ubuntu_22-04">
+  <title>Ubuntu 22.04 DISA STIG synthetic test</title>
+  <Rule id="xccdf_mil.disa.stig_ubuntu_22-04_rule_SV-123456r1" severity="medium">
+    <title>DISA STIG SSH root login check</title>
+    <ident system="https://cce.mitre.org">CCI-000001</ident>
+    <ident system="https://public.cyber.mil">SV-123456r1</ident>
+    <check>
+      <check-content>Confirm the effective SSH daemon configuration.</check-content>
+    </check>
+    <fixtext>Use this source's release-specific remediation.</fixtext>
+  </Rule>
+</Benchmark>

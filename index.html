@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f7f6" />
+    <meta name="description" content="A safer, version-aware guide to DISA STIG and SCAP Security Guide hardening rules." />
+    <title>Hardenhelp — security rules, made safer</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Hardenhelp home">
+        <span class="brand-mark" aria-hidden="true">h.</span>
+        <span>hardenhelp<span class="brand-period">.</span></span>
+      </a>
+      <nav class="top-nav" aria-label="Main navigation">
+        <a class="active" href="#catalog">Rule library</a>
+        <a href="#how-it-works">How it works</a>
+      </nav>
+      <div class="top-actions">
+        <span class="local-pill"><span></span> Local workspace</span>
+        <button class="button button-dark" id="import-button" type="button">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13V3m0 0L6.5 6.5M10 3l3.5 3.5M4 12.5v3A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5v-3" /></svg>
+          Import benchmark
+        </button>
+        <input id="file-input" type="file" accept=".xml,.xccdf,application/xml,text/xml" multiple hidden />
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> HARDEN WITH CONTEXT</div>
+          <h1>Security rules,<br /><span>without the guesswork.</span></h1>
+          <p>Find the right requirement for your OS release. Understand the check, review the fix, and spot changes that could cut off remote access.</p>
+        </div>
+        <div class="hero-aside">
+          <div class="aside-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><path d="M24 5 39 11v11c0 10-6.2 17.1-15 21-8.8-3.9-15-11-15-21V11l15-6Z" /><path d="m17 24 4.5 4.5L31 19" /></svg>
+          </div>
+          <div>
+            <strong>Know before you change</strong>
+            <span>Remediations are reference-only. Nothing runs on your servers.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace" id="catalog">
+        <div class="workspace-heading">
+          <div>
+            <div class="eyebrow muted-eyebrow">RULE EXPLORER</div>
+            <h2>Find a hardening rule</h2>
+          </div>
+          <div class="catalog-count"><span id="rule-count">0</span> rules loaded</div>
+        </div>
+
+        <div class="explorer-toolbar">
+          <label class="search-box">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.8" /><path d="m13.2 13.2 4 4" /></svg>
+            <input id="search-input" type="search" placeholder="Search a STIG, SV, CCI, SSG ID or keyword…" autocomplete="off" />
+            <kbd>Ctrl K</kbd>
+          </label>
+          <label class="select-wrap">
+            <span class="sr-only">Operating system and version</span>
+            <select id="os-filter">
+              <option value="all">All operating systems</option>
+              <option value="Ubuntu 22.04">Ubuntu 22.04</option>
+              <option value="Ubuntu 24.04">Ubuntu 24.04</option>
+              <option value="RHEL 9">RHEL 9</option>
+              <option value="Windows Server 2022">Windows Server 2022</option>
+            </select>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+          </label>
+          <label class="select-wrap severity-select">
+            <span class="sr-only">Severity</span>
+            <select id="severity-filter">
+              <option value="all">All severities</option>
+              <option value="CAT I">CAT I</option>
+              <option value="CAT II">CAT II</option>
+              <option value="CAT III">CAT III</option>
+              <option value="Unverified">Unverified</option>
+            </select>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
+          </label>
+        </div>
+        <p class="import-hint">Import one or more extracted XCCDF XML files at once. Extract STIG ZIP downloads before selecting the XML.</p>
+
+        <div class="explorer-grid">
+          <aside class="results-panel" aria-label="Matching rules">
+            <div class="results-header">
+              <span>RULES</span>
+              <span id="result-count">0 results</span>
+            </div>
+            <div id="rule-list" class="rule-list"></div>
+            <button id="load-more" class="load-more" type="button" hidden>Show more rules</button>
+            <div id="empty-state" class="empty-state">
+              <div class="empty-symbol" aria-hidden="true">⌕</div>
+              <strong>No benchmark loaded yet</strong>
+              <p>Import an XCCDF XML file to search its rules, identifiers, checks, and remediations.</p>
+              <button class="text-button" id="empty-import" type="button">Choose an XCCDF file <span aria-hidden="true">→</span></button>
+            </div>
+          </aside>
+
+          <article id="detail-panel" class="detail-panel" aria-live="polite">
+            <div class="detail-placeholder">
+              <span class="placeholder-icon" aria-hidden="true">
+                <svg viewBox="0 0 36 36"><path d="M8 5.5h13l7 7V30H8z" /><path d="M21 5.5v7h7M12.5 19h11M12.5 23.5h11" /></svg>
+              </span>
+              <h3>Select a rule to inspect it</h3>
+              <p>Search by any identifier or browse an imported benchmark. Each rule stays tied to the OS version it came from.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="scan-card" id="scan-status" aria-labelledby="scan-heading">
+        <div class="scan-card-top">
+          <div>
+            <div class="eyebrow muted-eyebrow">SCAN EVIDENCE</div>
+            <h2 id="scan-heading">What did the last OpenSCAP report find?</h2>
+          </div>
+          <div class="scan-actions">
+            <label class="scan-report-select">
+              <span class="sr-only">Select scan report</span>
+              <select id="scan-report-select" hidden></select>
+            </label>
+            <button class="button button-outline" id="scan-import-button" type="button">Import scan report</button>
+            <input id="scan-file-input" type="file" accept=".xml,.xccdf,application/xml,text/xml" multiple hidden />
+          </div>
+        </div>
+        <div id="scan-summary" aria-live="polite"></div>
+        <p class="scan-caveat">A scan report is a dated snapshot, not a live check or a guarantee of compliance. Confirm the host, benchmark, profile, and scan time before relying on its results.</p>
+      </section>
+
+      <section class="lower-grid" id="how-it-works">
+        <article class="info-card severity-card">
+          <div class="card-heading">
+            <div>
+              <div class="eyebrow muted-eyebrow">SEVERITY GUIDE</div>
+              <h2>What do CAT levels mean?</h2>
+            </div>
+            <span class="info-icon" aria-hidden="true">i</span>
+          </div>
+          <div class="severity-row"><span class="severity-dot cat1"></span><strong>CAT I</strong><span>Direct, immediate impact to confidentiality, integrity, or availability.</span></div>
+          <div class="severity-row"><span class="severity-dot cat2"></span><strong>CAT II</strong><span>Potential impact to confidentiality, integrity, or availability.</span></div>
+          <div class="severity-row"><span class="severity-dot cat3"></span><strong>CAT III</strong><span>Weakens safeguards against loss of confidentiality, integrity, or availability.</span></div>
+          <p class="fine-print">DISA STIG high/medium/low severities map to CAT I/II/III; other benchmark severities are not assumed equivalent. Confirm the current release for authoritative definitions.</p>
+        </article>
+
+        <article class="info-card compare-card">
+          <div class="card-heading">
+            <div>
+              <div class="eyebrow muted-eyebrow">RELEASE COMPARISON</div>
+              <h2>Same requirement, different release?</h2>
+            </div>
+            <span class="compare-icon" aria-hidden="true">⇄</span>
+          </div>
+          <p>Compare imported OS releases using shared identifiers (such as CCI or rule IDs). Matches are evidence-based; similar titles are not treated as an exact ID match.</p>
+          <div class="compare-controls">
+            <label><span class="sr-only">First benchmark</span><select id="compare-a"><option value="">Select first benchmark</option></select></label>
+            <span class="compare-arrow" aria-hidden="true">→</span>
+            <label><span class="sr-only">Second benchmark</span><select id="compare-b"><option value="">Select second benchmark</option></select></label>
+            <button id="compare-button" class="button button-outline" type="button">Compare</button>
+          </div>
+          <div id="compare-output" class="compare-output" aria-live="polite">Import two releases to compare rules.</div>
+        </article>
+      </section>
+
+      <section class="safety-strip">
+        <div class="safety-mark" aria-hidden="true">!</div>
+        <div><strong>Never assume a production server is compliant.</strong><span>Hardenhelp explains benchmark data; it does not scan hosts or verify your environment. Keep console or out-of-band access before changing SSH, PAM, firewall, or account lockout settings.</span></div>
+        <a href="https://public.cyber.mil/stigs/downloads/" target="_blank" rel="noreferrer">Get official STIGs <span aria-hidden="true">↗</span></a>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand footer-brand" href="#"><span class="brand-mark" aria-hidden="true">h.</span><span>hardenhelp<span class="brand-period">.</span></span></a>
+      <span>Built for careful admins. Local-first, reference-only.</span>
+      <div class="source-links">
+        <a href="https://github.com/ComplianceAsCode/content" target="_blank" rel="noreferrer">ComplianceAsCode</a>
+        <a href="https://ncp.nist.gov/repository" target="_blank" rel="noreferrer">NIST NCP</a>
+        <a href="https://www.open-scap.org/" target="_blank" rel="noreferrer">OpenSCAP</a>
+      </div>
+    </footer>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
