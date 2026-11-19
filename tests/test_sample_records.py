@@ -9,4 +9,5 @@ def test_sample_records_have_twenty_unique_ids_and_sources() -> None:
 
     assert len(records) == 20
     assert len(record_ids) == len(set(record_ids))
-    assert all(record.get("source_url") for record in records)
+    assert all(record.get("rule_id") for record in records)
+    assert all(record.get("source_url", "").endswith(f"#{record['rule_id']}") for record in records)

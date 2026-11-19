@@ -37,15 +37,17 @@
   {
     "id": "003",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_disable_users_coredumps",
+    "cci": [
+      "CCI-000366"
+    ],
     "ssg_rule": "disable_users_coredumps",
     "severity": "medium",
     "os": "Ubuntu 22.04",
     "title": "Disable users' core dumps",
     "check": "grep -R \"^[*].*core.*hard.*0\" /etc/security/limits.conf /etc/security/limits.d 2>/dev/null",
     "fix": "Add '* hard core 0' to /etc/security/limits.conf.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=disable_users_coredumps&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_disable_users_coredumps",
     "licence": "BSD-3-Clause"
   },
   {
@@ -69,127 +71,152 @@
   {
     "id": "005",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
-    "ssg_rule": "accounts_password_pam_pwquality",
+    "rule_id": "xccdf_org.ssgproject.content_rule_accounts_password_pam_minlen",
+    "cci": [
+      "CCI-000205"
+    ],
+    "ssg_rule": "accounts_password_pam_minlen",
     "severity": "medium",
     "os": "Ubuntu 22.04",
-    "title": "Configure PAM password quality",
-    "check": "grep -R \"pam_pwquality\" /etc/pam.d/common-password",
-    "fix": "Configure pam_pwquality.so in /etc/pam.d/common-password.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=accounts_password_pam_pwquality&type=code",
+    "title": "Ensure PAM enforces minimum password length",
+    "check": "grep -E 'pam_pwquality\\.so.*minlen=14' /etc/pam.d/common-password",
+    "fix": "Set minlen=14 after pam_pwquality in /etc/pam.d/common-password.",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_accounts_password_pam_minlen",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "006",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
-    "ssg_rule": "accounts_password_pam_pwhistory_remember",
+    "rule_id": "xccdf_org.ssgproject.content_rule_accounts_password_pam_unix_remember",
+    "cci": [
+      "CCI-000200"
+    ],
+    "ssg_rule": "accounts_password_pam_unix_remember",
     "severity": "medium",
     "os": "Ubuntu 22.04",
     "title": "Limit password reuse",
-    "check": "grep -R \"pwhistory.*remember\" /etc/pam.d",
-    "fix": "Configure an approved remember value in the PAM pwhistory module.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=accounts_password_pam_pwhistory_remember&type=code",
+    "check": "grep -R -E 'pam_(unix|pwhistory)\\.so.*remember=' /etc/pam.d",
+    "fix": "Configure an approved remember value for pam_unix.so or pam_pwhistory.so in the active PAM profile.",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_accounts_password_pam_unix_remember",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "007",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
-    "ssg_rule": "sysctl_kernel_kptr_restrict",
+    "rule_id": "xccdf_org.ssgproject.content_rule_sysctl_kernel_randomize_va_space",
+    "cci": [
+      "CCI-000366",
+      "CCI-002824"
+    ],
+    "ssg_rule": "sysctl_kernel_randomize_va_space",
     "severity": "medium",
     "os": "Ubuntu 22.04",
-    "title": "Restrict kernel pointer exposure",
-    "check": "sysctl kernel.kptr_restrict",
-    "fix": "Set kernel.kptr_restrict=2 in /etc/sysctl.d/ and run sysctl --system.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=sysctl_kernel_kptr_restrict&type=code",
+    "title": "Enable randomized virtual address space",
+    "check": "sysctl kernel.randomize_va_space",
+    "fix": "Set kernel.randomize_va_space=2 in a file under /etc/sysctl.d/ and run sudo sysctl --system.",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_sysctl_kernel_randomize_va_space",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "008",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_sshd_set_idle_timeout",
+    "cci": [
+      "CCI-000879",
+      "CCI-001133",
+      "CCI-002361"
+    ],
     "ssg_rule": "sshd_set_idle_timeout",
     "severity": "medium",
     "os": "Ubuntu 22.04",
     "title": "Set SSH idle timeout",
     "check": "sshd -T -C user=root,host=localhost,addr=127.0.0.1 2>/dev/null | grep -E '^(clientaliveinterval|clientalivecountmax)'",
     "fix": "Set ClientAliveInterval 600 and ClientAliveCountMax 0 in the SSH server configuration.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=sshd_set_idle_timeout&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_sshd_set_idle_timeout",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "009",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_sshd_disable_empty_passwords",
+    "cci": [
+      "CCI-000366",
+      "CCI-000766"
+    ],
     "ssg_rule": "sshd_disable_empty_passwords",
     "severity": "high",
     "os": "Ubuntu 22.04",
     "title": "Disable SSH login with empty passwords",
     "check": "sshd -T -C user=root,host=localhost,addr=127.0.0.1 2>/dev/null | grep -i '^permitemptypasswords'",
     "fix": "Set PermitEmptyPasswords no in /etc/ssh/sshd_config and restart ssh.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=sshd_disable_empty_passwords&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_sshd_disable_empty_passwords",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "010",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
-    "ssg_rule": "sshd_disable_host_auth",
-    "severity": "high",
+    "rule_id": "xccdf_org.ssgproject.content_rule_sshd_disable_rhosts",
+    "cci": [
+      "CCI-000366"
+    ],
+    "ssg_rule": "sshd_disable_rhosts",
+    "severity": "medium",
     "os": "Ubuntu 22.04",
-    "title": "Disable SSH host-based authentication",
-    "check": "sshd -T -C user=root,host=localhost,addr=127.0.0.1 2>/dev/null | grep -i '^hostbasedauthentication'",
-    "fix": "Set HostbasedAuthentication no in /etc/ssh/sshd_config and restart ssh.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=sshd_disable_host_auth&type=code",
+    "title": "Disable SSH support for .rhosts files",
+    "check": "sshd -T -C user=root,host=localhost,addr=127.0.0.1 | grep -Fx 'ignorerhosts yes'",
+    "fix": "Set IgnoreRhosts yes in /etc/ssh/sshd_config, validate the configuration, then restart ssh.",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_sshd_disable_rhosts",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "011",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_account_disable_post_pw_expiration",
+    "cci": [
+      "CCI-000017",
+      "CCI-000795"
+    ],
     "ssg_rule": "account_disable_post_pw_expiration",
     "severity": "medium",
     "os": "Ubuntu 22.04",
     "title": "Disable accounts after password expiration",
     "check": "grep -R '^INACTIVE=' /etc/default/useradd",
     "fix": "Set INACTIVE to the approved inactive-account period in /etc/default/useradd.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=account_disable_post_pw_expiration&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_account_disable_post_pw_expiration",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "012",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_service_auditd_enabled",
+    "cci": [
+      "CCI-000130",
+      "CCI-000131",
+      "CCI-000132"
+    ],
     "ssg_rule": "service_auditd_enabled",
     "severity": "high",
     "os": "Ubuntu 22.04",
     "title": "Enable the audit daemon",
     "check": "systemctl is-enabled auditd && systemctl is-active auditd",
     "fix": "Install auditd if absent, then run systemctl enable --now auditd.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=service_auditd_enabled&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-standard.html#xccdf_org.ssgproject.content_rule_service_auditd_enabled",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "013",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
-    "ssg_rule": "auditd_data_retention_admin_space_left",
+    "rule_id": "xccdf_org.ssgproject.content_rule_file_permissions_etc_audit_auditd",
+    "cci": [
+      "CCI-000171"
+    ],
+    "ssg_rule": "file_permissions_etc_audit_auditd",
     "severity": "medium",
     "os": "Ubuntu 22.04",
-    "title": "Configure audit log space warning",
-    "check": "grep -E '^admin_space_left' /etc/audit/auditd.conf",
-    "fix": "Set admin_space_left and admin_space_left_action in /etc/audit/auditd.conf according to policy.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=auditd_data_retention_admin_space_left&type=code",
+    "title": "Verify permissions on /etc/audit/auditd.conf",
+    "check": "test \"$(stat -c '%a' /etc/audit/auditd.conf)\" = 640",
+    "fix": "Run sudo chmod 0640 /etc/audit/auditd.conf.",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_file_permissions_etc_audit_auditd",
     "licence": "BSD-3-Clause"
   },
   {
@@ -228,57 +255,70 @@
   {
     "id": "016",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
-    "ssg_rule": "service_unattended_upgrades_enabled",
+    "rule_id": "xccdf_org.ssgproject.content_rule_accounts_passwords_pam_faillock_deny",
+    "cci": [
+      "CCI-000044",
+      "CCI-002236",
+      "CCI-002237",
+      "CCI-002238"
+    ],
+    "ssg_rule": "accounts_passwords_pam_faillock_deny",
     "severity": "medium",
     "os": "Ubuntu 22.04",
-    "title": "Enable automatic security updates",
-    "check": "apt-config dump | grep -E '^APT::Periodic::(Update-Package-Lists|Unattended-Upgrade)'",
-    "fix": "Configure unattended-upgrades and periodic update settings.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=service_unattended_upgrades_enabled&type=code",
+    "title": "Lock accounts after failed password attempts",
+    "check": "grep -E '^[[:space:]]*deny[[:space:]]*=' /etc/security/faillock.conf",
+    "fix": "Configure pam_faillock and set an approved deny threshold in /etc/security/faillock.conf.",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_accounts_passwords_pam_faillock_deny",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "017",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_sysctl_net_ipv4_conf_all_accept_source_route",
+    "cci": [
+      "CCI-000366"
+    ],
     "ssg_rule": "sysctl_net_ipv4_conf_all_accept_source_route",
     "severity": "medium",
     "os": "Ubuntu 22.04",
     "title": "Disable IPv4 source routing",
     "check": "sysctl net.ipv4.conf.all.accept_source_route",
     "fix": "Set net.ipv4.conf.all.accept_source_route=0 in /etc/sysctl.d/ and run sysctl --system.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=sysctl_net_ipv4_conf_all_accept_source_route&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_sysctl_net_ipv4_conf_all_accept_source_route",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "018",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_all_accept_ra",
+    "cci": [
+      "CCI-000366"
+    ],
     "ssg_rule": "sysctl_net_ipv6_conf_all_accept_ra",
     "severity": "medium",
     "os": "Ubuntu 22.04",
     "title": "Disable IPv6 router advertisements",
     "check": "sysctl net.ipv6.conf.all.accept_ra",
     "fix": "Set net.ipv6.conf.all.accept_ra=0 in /etc/sysctl.d/ and run sysctl --system.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=sysctl_net_ipv6_conf_all_accept_ra&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_sysctl_net_ipv6_conf_all_accept_ra",
     "licence": "BSD-3-Clause"
   },
   {
     "id": "019",
     "stig_id": null,
-    "rule_id": null,
-    "cci": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_sshd_set_keepalive",
+    "cci": [
+      "CCI-000879",
+      "CCI-001133",
+      "CCI-002361"
+    ],
     "ssg_rule": "sshd_set_keepalive",
     "severity": "medium",
     "os": "Ubuntu 22.04",
     "title": "Configure SSH keepalive settings",
     "check": "sshd -T -C user=root,host=localhost,addr=127.0.0.1 2>/dev/null | grep -i '^clientalive'",
     "fix": "Set ClientAliveInterval and ClientAliveCountMax in /etc/ssh/sshd_config according to policy.",
-    "source_url": "https://github.com/ComplianceAsCode/content/search?q=sshd_set_keepalive&type=code",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html#xccdf_org.ssgproject.content_rule_sshd_set_keepalive",
     "licence": "BSD-3-Clause"
   },
   {
