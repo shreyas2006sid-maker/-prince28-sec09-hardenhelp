@@ -87,3 +87,16 @@ uv run pytest
 uv run ruff check .
 uv run pre-commit run --all-files
 ```
+
+## Docker
+
+Build and run the local image:
+
+```powershell
+docker build -t hardenhelp:devdocker .
+docker run --rm --env-file .env -p 8000:8000 hardenhelp:devdocker
+```
+
+The `.dockerignore` file keeps local credentials, virtual environments, and test files out of the
+build context. The app can start without a reachable database; `/ready` reports whether PostgreSQL
+is available.
