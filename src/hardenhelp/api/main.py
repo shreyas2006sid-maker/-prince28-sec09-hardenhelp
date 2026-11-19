@@ -11,8 +11,8 @@ from hardenhelp.api.middleware import RequestContextMiddleware
 from hardenhelp.api.routes.documents import router as documents_router
 from hardenhelp.api.routes.health import router as health_router
 from hardenhelp.config import Settings
+from hardenhelp.db.session import make_engine, make_sessionmaker
 from hardenhelp.logging_setup import configure_logging
-from hardenhelp.store import RecordStore
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -21,22 +21,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        store = RecordStore(settings.data_file)
+        engine = make_engine(settings)
+        app.state.engine = engine
+        app.state.session_factory = make_sessionmaker(engine)
         try:
-            store.load()
-            app.state.store = store
-            logging.info(
-                "records loaded",
-                extra={
-                    "records": len(store.records),
-                    "data_file": str(settings.data_file),
-                },
-            )
-        except RuntimeError as exc:
-            app.state.store = RecordStore(settings.data_file)
-            app.state.store.records = []
-            logging.warning(str(exc), extra={"data_file": str(settings.data_file)})
-        yield
+            yield
+        finally:
+            await engine.dispose()
+            logging.info("database engine disposed")
 
     app = FastAPI(
         title=settings.app_name,

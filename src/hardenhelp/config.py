@@ -4,7 +4,10 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from hardenhelp.db.url import to_asyncpg_url
 
 
 class Settings(BaseSettings):
@@ -14,6 +17,12 @@ class Settings(BaseSettings):
     app_env: Literal["local", "ci", "production"]
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     data_file: Path = Path("data/sample_records.json")
+    database_url: str = "postgresql://localhost:5432/hardenhelp"
+
+    @field_validator("database_url")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        return to_asyncpg_url(value)
 
 
 @lru_cache

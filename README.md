@@ -3,7 +3,7 @@
 HardenHelp explains Linux and Windows hardening rules from the DISA STIGs and the SCAP Security
 Guide: what a rule checks, why it matters and the exact fix for the right OS version.
 
-**Status:** Day 1 foundation (FastAPI skeleton, quality gates).
+**Status:** Day 3 foundation (PostgreSQL, migrations, idempotent loader, FastAPI API).
 
 ## Who it's for
 
@@ -45,11 +45,40 @@ of 40 rules on a test VM.
 
 ```bash
 uv sync
-cp .env.example .env
+copy .env.example .env
+# Set DATABASE_URL in .env to your Neon PostgreSQL connection string.
+uv run alembic upgrade head
+uv run python scripts/load_db.py
 uv run uvicorn hardenhelp.api.main:create_app --factory --reload --no-access-log
 ```
 
 Open http://localhost:8000/docs.
+
+The service starts even if Postgres is unreachable: `/health` remains a liveness check and
+`/ready` returns HTTP 503 until the database responds. Do not commit `.env`; `DATABASE_URL`
+contains database credentials.
+
+## Database workflow
+
+```bash
+uv run alembic upgrade head
+uv run alembic downgrade -1
+uv run alembic upgrade head
+uv run python scripts/load_db.py
+uv run python scripts/load_db.py
+uv run python scripts/explain.py ssg_rule sshd_disable_root_login
+```
+
+The loader uses a SHA-256 fingerprint: repeated runs skip unchanged rows and update changed rows.
+`source_url` values point to ComplianceAsCode rule searches; confirm each rule against its upstream
+source before using the sample data for an audit.
+
+Optional integration tests require a dedicated database with migrations applied:
+
+```powershell
+$env:TEST_DATABASE_URL = "postgresql://..."
+uv run pytest tests/test_db_integration.py
+```
 
 ## Checks
 
