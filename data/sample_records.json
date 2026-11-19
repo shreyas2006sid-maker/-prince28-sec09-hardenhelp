@@ -1,18 +1,22 @@
 [
     {
-        "id":  "001",
-        "stig_id":  null,
-        "rule_id":  null,
-        "cci":  null,
-        "ssg_rule":  "ensure_gpgcheck_globally_enabled",
-        "severity":  "high",
-        "os":  "Ubuntu 22.04",
-        "title":  "Ensure GPG checks are globally enabled",
-        "check":  "grep -R \"^gpgcheck=\" /etc/dnf.conf /etc/yum.conf /etc/yum.repos.d 2\u003e/dev/null",
-        "fix":  "Set gpgcheck=1 in applicable package repository configuration.",
-        "source_url":  "https://github.com/ComplianceAsCode/content/search?q=ensure_gpgcheck_globally_enabled\u0026type=code",
-        "licence":  "BSD-3-Clause"
-    },
+    "id": "001",
+    "stig_id": null,
+    "rule_id": "xccdf_org.ssgproject.content_rule_package_audit_installed",
+    "cci": [
+        "CCI-000130",
+        "CCI-000131",
+        "CCI-000132"
+    ],
+    "ssg_rule": "package_audit_installed",
+    "severity": "medium",
+    "os": "Ubuntu 22.04",
+    "title": "Ensure the audit subsystem is installed",
+    "check": "dpkg-query -W -f='${Status}' auditd",
+    "fix": "Install the auditd package using the Ubuntu package manager.",
+    "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-standard.html",
+    "licence": "BSD-3-Clause"
+},
     {
         "id":  "002",
         "stig_id":  null,
@@ -265,18 +269,22 @@
         "source_url":  "https://github.com/ComplianceAsCode/content/search?q=sshd_set_keepalive\u0026type=code",
         "licence":  "BSD-3-Clause"
     },
-    {
-        "id":  "020",
-        "stig_id":  null,
-        "rule_id":  null,
-        "cci":  null,
-        "ssg_rule":  "service_firewalld_enabled",
-        "severity":  "high",
-        "os":  "Ubuntu 22.04",
-        "title":  "Enable the host firewall",
-        "check":  "systemctl is-enabled ufw; systemctl is-active ufw",
-        "fix":  "Install and enable ufw after defining required inbound rules.",
-        "source_url":  "https://github.com/ComplianceAsCode/content/search?q=service_firewalld_enabled\u0026type=code",
-        "licence":  "BSD-3-Clause"
-    }
+    
+{
+  "id": "020",
+  "stig_id": null,
+  "rule_id": "xccdf_org.ssgproject.content_rule_service_ufw_enabled",
+  "cci": [
+    "CCI-002314"
+  ],
+  "ssg_rule": "service_ufw_enabled",
+  "severity": "medium",
+  "os": "Ubuntu 22.04",
+  "title": "Verify UFW Enabled",
+  "check": "Check whether the ufw.service is enabled and active using systemctl.",
+  "fix": "Enable the UFW service using sudo systemctl enable ufw.service.",
+  "source_url": "https://static.open-scap.org/ssg-guides/ssg-ubuntu2204-guide-cis_level1_server.html",
+  "licence": "BSD-3-Clause"
+}
+
 ]
