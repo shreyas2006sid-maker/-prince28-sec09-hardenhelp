@@ -37,15 +37,28 @@ uv run python scripts/explain.py ssg_rule sshd_disable_root_login
 
 ```text
 -- 1) What the planner chooses on its own:
-Seq Scan on documents (cost=0.00..11.00 rows=1 width=36)
-Filter: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
+Seq Scan on documents  (cost=0.00..11.00 rows=1 width=36) (actual time=0.015..0.022 rows=1.00 loops=1)
+  Filter: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
 Rows Removed by Filter: 19
+  Buffers: shared hit=2
+Planning:
+  Buffers: shared hit=150
+Planning Time: 0.372 ms
+Execution Time: 0.044 ms
 
 -- 2) Seq scan switched off, to prove the index can be used:
-Bitmap Heap Scan on documents
-Recheck Cond: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
--> Bitmap Index Scan on ix_documents_metadata_gin
-Index Cond: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
+Bitmap Heap Scan on documents  (cost=12.81..16.82 rows=1 width=36) (actual time=0.040..0.041 rows=1.00 loops=1)
+  Recheck Cond: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
+  Heap Blocks: exact=1
+  Buffers: shared hit=4
+  ->  Bitmap Index Scan on ix_documents_metadata_gin  (cost=0.00..12.81 rows=1 width=0) (actual time=0.010..0.010 rows=1.00 loops=1)
+        Index Cond: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=1
+Planning Time: 0.073 ms
+Execution Time: 0.087 ms
 ```
 
 Why did the planner choose a Seq Scan on my table? (2 lines, your own words)

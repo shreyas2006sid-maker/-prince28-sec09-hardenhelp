@@ -70,8 +70,8 @@ uv run python scripts/explain.py ssg_rule sshd_disable_root_login
 ```
 
 The loader uses a SHA-256 fingerprint: repeated runs skip unchanged rows and update changed rows.
-`source_url` values point to ComplianceAsCode rule searches; confirm each rule against its upstream
-source before using the sample data for an audit.
+The seed data is for development and learning; verify each rule's OS applicability and remediation
+against its upstream source before using it for an audit.
 
 Optional integration tests require a dedicated database with migrations applied:
 

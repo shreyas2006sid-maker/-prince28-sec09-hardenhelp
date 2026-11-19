@@ -2,7 +2,7 @@
 
 1. How can an administrator map a STIG ID to an SSG rule name for Ubuntu 22.04?
 2. Which Ubuntu 22.04 rule prohibits direct root SSH login?
-3. What command checks whether GPG checking is enabled globally for package repositories?
+3. What command verifies that the `auditd` package is installed on Ubuntu 22.04?
 4. What remediation disables root login in the SSH daemon configuration?
 5. Which setting limits the password history enforced through PAM?
 6. Is there a rule that names a kernel option that does not exist on Ubuntu 22.04?

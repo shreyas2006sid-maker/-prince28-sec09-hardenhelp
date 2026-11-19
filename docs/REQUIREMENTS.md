@@ -3,7 +3,7 @@
 ## Functional requirements
 
 1. The service must expose `/health` and return HTTP 200 with status `ok`.
-2. The service must expose `/ready` and fail with HTTP 503 when fewer than 20 records are loaded.
+2. The service must expose `/ready` and return HTTP 503 when PostgreSQL is unavailable.
 3. The service must return paginated document results with a limit between 1 and 100.
 4. The service must support text search and exact `stig_id` filtering across records.
 5. The service must return missing document IDs as RFC 9457 problem details with HTTP 404.
