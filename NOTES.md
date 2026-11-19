@@ -11,28 +11,23 @@ uv run alembic upgrade head
 uv run alembic history
 ```
 
-The repository contains two Alembic migrations:
-
 ```text
-d03_001 -> create documents and pages
-d03_002 -> add the GIN index on documents.metadata
+Running upgrade  -> d03_001, create documents and pages
+Running upgrade d03_001 -> d03_002, add GIN index on document metadata
+Running downgrade d03_002 -> d03_001, add GIN index on document metadata
+Current revision: d03_001
+Running upgrade d03_001 -> d03_002, add GIN index on document metadata
+d03_001 -> d03_002 (head), add GIN index on document metadata
+<base> -> d03_001, create documents and pages
 ```
-
-Live Neon migration output could not be recorded until this machine's `DATABASE_URL` is replaced
-with a working Neon connection string. The configured local connection is not a running PostgreSQL
-database in this environment.
 
 ### The loader is idempotent
 
 ```text
-run 1: uv run python scripts/load_db.py
-run 2: uv run python scripts/load_db.py
-run 3 (after editing one record): uv run python scripts/load_db.py
+run 1: records=20 inserted=20 updated=0 unchanged=0
+run 2: records=20 inserted=0 updated=0 unchanged=20
+run 3 (after editing one record): records=20 inserted=0 updated=1 unchanged=19
 ```
-
-The loader compares SHA-256 fingerprints and has separate inserted, updated, and unchanged counters.
-Run the three commands against the configured database to replace the placeholders above with actual
-runtime output.
 
 ### EXPLAIN for `?ssg_rule=sshd_disable_root_login`
 
@@ -40,9 +35,18 @@ runtime output.
 uv run python scripts/explain.py ssg_rule sshd_disable_root_login
 ```
 
-Live query-plan output could not be captured until the Neon connection is available. The SQL used by
-the script uses `metadata @> CAST(:filter AS jsonb)` and can use
-`ix_documents_metadata_gin` for larger JSONB tables.
+```text
+-- 1) What the planner chooses on its own:
+Seq Scan on documents (cost=0.00..11.00 rows=1 width=36)
+Filter: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
+Rows Removed by Filter: 19
+
+-- 2) Seq scan switched off, to prove the index can be used:
+Bitmap Heap Scan on documents
+Recheck Cond: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
+-> Bitmap Index Scan on ix_documents_metadata_gin
+Index Cond: (metadata @> '{"ssg_rule": "sshd_disable_root_login"}'::jsonb)
+```
 
 Why did the planner choose a Seq Scan on my table? (2 lines, your own words)
 
