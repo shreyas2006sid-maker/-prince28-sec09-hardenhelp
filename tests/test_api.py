@@ -1,6 +1,10 @@
+import socket
+from types import SimpleNamespace
+
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
+from starlette.requests import Request
 
 from hardenhelp.api.deps import check_db
 from hardenhelp.config import Settings
@@ -22,7 +26,33 @@ def test_ready_is_503_when_database_is_unavailable(client: TestClient) -> None:
     client.app.dependency_overrides[check_db] = lambda: False
     response = client.get("/ready")
     assert response.status_code == 503
-    assert response.json()["checks"]["database"] is False
+    assert response.json() == {
+        "status": "not_ready",
+        "checks": {"database": False},
+    }
+
+
+@pytest.mark.asyncio
+async def test_check_db_handles_dns_connection_failure() -> None:
+    class FailedConnection:
+        async def __aenter__(self) -> None:
+            raise socket.gaierror("database host is unavailable")
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+    class FailedEngine:
+        def connect(self) -> FailedConnection:
+            return FailedConnection()
+
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(engine=FailedEngine())),
+        }
+    )
+
+    assert await check_db(request) is False
 
 
 def test_list_documents_paginates(client: TestClient) -> None:

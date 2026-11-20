@@ -30,6 +30,6 @@ async def check_db(request: Request) -> bool:
         async with request.app.state.engine.connect() as connection:
             await connection.execute(text("SELECT 1"))
         return True
-    except SQLAlchemyError:
+    except (OSError, SQLAlchemyError):
         logging.warning("database readiness check failed", extra={"database": False})
         return False
