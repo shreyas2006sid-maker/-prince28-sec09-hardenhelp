@@ -55,6 +55,35 @@ async def test_check_db_handles_dns_connection_failure() -> None:
     assert await check_db(request) is False
 
 
+@pytest.mark.parametrize(("document_count", "expected"), [(19, False), (20, True)])
+@pytest.mark.asyncio
+async def test_check_db_requires_minimum_document_count(
+    document_count: int, expected: bool
+) -> None:
+    class Connection:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def execute(self, _query: object) -> SimpleNamespace:
+            return SimpleNamespace(scalar_one=lambda: document_count)
+
+    class Engine:
+        def connect(self):
+            return Connection()
+
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(engine=Engine())),
+        }
+    )
+
+    assert await check_db(request) is expected
+
+
 def test_list_documents_paginates(client: TestClient) -> None:
     response = client.get("/v1/documents", params={"limit": 2})
     body = response.json()

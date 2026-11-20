@@ -34,7 +34,17 @@ async def seeded(settings: Settings) -> Settings:
     try:
         async with make_sessionmaker(engine)() as session, session.begin():
             await session.execute(text("DELETE FROM documents"))
-            for row in ROWS:
+            filler_rows = [
+                {
+                    "id": f"seed-{index:03}",
+                    "title": f"Seed {index:03}",
+                    "kind": "other",
+                    "year": 2020,
+                    "tags": [],
+                }
+                for index in range(17)
+            ]
+            for row in [*ROWS, *filler_rows]:
                 metadata = {key: value for key, value in row.items() if key not in ("id", "title")}
                 digest = hashlib.sha256(
                     json.dumps(row, sort_keys=True, separators=(",", ":")).encode("utf-8")
