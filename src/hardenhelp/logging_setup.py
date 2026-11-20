@@ -11,6 +11,7 @@ class JsonFormatter(logging.Formatter):
             "level": record.levelname,
             "msg": record.getMessage(),
         }
+
         for key, value in getattr(record, "__dict__", {}).items():
             if key not in {
                 "args",
@@ -37,12 +38,17 @@ class JsonFormatter(logging.Formatter):
                 "threadName",
             }:
                 payload[key] = value
+
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+
         return json.dumps(payload, default=str)
 
 
 def configure_logging(level: str = "INFO") -> None:
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(JsonFormatter())
+
     root = logging.getLogger()
     root.handlers.clear()
     root.addHandler(handler)
