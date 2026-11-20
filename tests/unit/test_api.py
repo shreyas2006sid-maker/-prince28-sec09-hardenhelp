@@ -1,6 +1,10 @@
+import socket
+from types import SimpleNamespace
+
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
+from starlette.requests import Request
 
 from hardenhelp.api.deps import check_db
 from hardenhelp.config import Settings
@@ -9,7 +13,20 @@ from hardenhelp.config import Settings
 def test_health_is_ok(client: TestClient) -> None:
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json() == {
+        "status": "ok",
+        "app": "hardenhelp",
+        "env": "ci",
+        "version": "dev",
+    }
+
+
+def test_health_reports_configured_commit(client: TestClient, settings: Settings) -> None:
+    settings.git_sha = "abc123"
+
+    response = client.get("/health")
+
+    assert response.json()["version"] == "abc123"
 
 
 def test_ready_when_database_is_available(client: TestClient) -> None:
@@ -22,7 +39,62 @@ def test_ready_is_503_when_database_is_unavailable(client: TestClient) -> None:
     client.app.dependency_overrides[check_db] = lambda: False
     response = client.get("/ready")
     assert response.status_code == 503
-    assert response.json()["checks"]["database"] is False
+    assert response.json() == {
+        "status": "not_ready",
+        "checks": {"database": False},
+    }
+
+
+@pytest.mark.asyncio
+async def test_check_db_handles_dns_connection_failure() -> None:
+    class FailedConnection:
+        async def __aenter__(self) -> None:
+            raise socket.gaierror("database host is unavailable")
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+    class FailedEngine:
+        def connect(self) -> FailedConnection:
+            return FailedConnection()
+
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(engine=FailedEngine())),
+        }
+    )
+
+    assert await check_db(request) is False
+
+
+@pytest.mark.parametrize(("document_count", "expected"), [(19, False), (20, True)])
+@pytest.mark.asyncio
+async def test_check_db_requires_minimum_document_count(
+    document_count: int, expected: bool
+) -> None:
+    class Connection:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def execute(self, _query: object) -> SimpleNamespace:
+            return SimpleNamespace(scalar_one=lambda: document_count)
+
+    class Engine:
+        def connect(self):
+            return Connection()
+
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(engine=Engine())),
+        }
+    )
+
+    assert await check_db(request) is expected
 
 
 def test_list_documents_paginates(client: TestClient) -> None:

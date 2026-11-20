@@ -73,12 +73,16 @@ The loader uses a SHA-256 fingerprint: repeated runs skip unchanged rows and upd
 `source_url` values point to ComplianceAsCode rule searches; confirm each rule against its upstream
 source before using the sample data for an audit.
 
-Optional integration tests require a dedicated database with migrations applied:
+Integration tests create a unique temporary database, run the real migrations, and drop it after the
+test run. The server URL must allow creating databases; the Poe task defaults to the local Compose
+PostgreSQL server:
 
 ```powershell
-$env:TEST_DATABASE_URL = "postgresql://..."
-uv run pytest tests/test_db_integration.py
+docker compose up -d db
+uv run poe test-integration
 ```
+
+Without `TEST_DATABASE_URL`, integration tests are skipped when running the full test suite.
 
 ## Checks
 
@@ -87,3 +91,31 @@ uv run pytest
 uv run ruff check .
 uv run pre-commit run --all-files
 ```
+
+## Run locally in one command
+
+You need Docker Desktop running. From a fresh clone:
+
+```bash
+docker compose up --build
+```
+
+This starts Postgres with pgvector and Redis, runs migrations and loads the sample data, then
+starts the API.
+
+- API docs: http://localhost:8000/docs
+- Liveness: http://localhost:8000/health
+- Readiness (checks the database): http://localhost:8000/ready
+
+Stop with `Ctrl+C`, then run `docker compose down`. Add `-v` only when you intend to delete the
+local database volume.
+
+## Develop and test
+
+| Task | Mac / Linux | Windows |
+|---|---|---|
+| Run the API with reload | `make dev` | `uv run poe dev` |
+| Unit tests (no network) | `make test` | `uv run poe test` |
+| Integration tests (needs `docker compose up`) | `make test-integration` | `uv run poe test-integration` |
+| Coverage report | `make cov` | `uv run poe cov` |
+| Lint and format check | `make lint` | `uv run poe lint` |
