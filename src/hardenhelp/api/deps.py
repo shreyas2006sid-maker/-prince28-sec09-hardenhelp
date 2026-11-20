@@ -24,17 +24,16 @@ SessionDependency = Annotated[AsyncSession, Depends(get_session)]
 def get_repo(session: SessionDependency) -> DocumentRepository:
     return DocumentRepository(session)
 
+
 async def check_db(request: Request) -> bool:
     try:
         async with request.app.state.engine.connect() as connection:
-            result = await connection.execute(
-                text("SELECT COUNT(*) FROM documents")
-            )
+            result = await connection.execute(text("SELECT COUNT(*) FROM documents"))
             record_count = result.scalar_one()
 
         return record_count >= 20
 
-    except SQLAlchemyError:
+    except (OSError, SQLAlchemyError):
         logging.warning(
             "database readiness check failed",
             extra={"database": False},
