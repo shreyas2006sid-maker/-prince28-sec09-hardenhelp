@@ -10,6 +10,11 @@ __pycache__/
 !.env.example
 # Big data stays out of Git
 data/raw/
+# This local nested clone is a separate repository, not part of this project.
+/-prince28-sec09-hardenhelp/
+# Test and coverage output
+.coverage
+htmlcov/
 # Editors / OS
 .vscode/
 .idea/

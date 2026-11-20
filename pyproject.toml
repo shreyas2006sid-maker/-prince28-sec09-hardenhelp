@@ -23,16 +23,18 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
+    "poethepoet>=0.49.0",
     "pre-commit>=4.7.0",
     "pytest>=9.2.0",
     "pytest-asyncio>=1.5.0",
+    "pytest-cov>=7.1.0",
     "ruff>=0.17.5",
 ]
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["migrations/versions"]
+extend-exclude = ["migrations/versions", "-prince28-sec09-hardenhelp"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM"]
@@ -40,5 +42,29 @@ select = ["E", "F", "I", "B", "UP", "SIM"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+asyncio_mode = "auto"  # async def tests just work
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+
+[tool.coverage.run]
+source = ["hardenhelp"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.poe.tasks]
+dev = "uvicorn hardenhelp.api.main:create_app --factory --reload --no-access-log"
+lint = ["_ruff_check", "_ruff_format"]
+_ruff_check = "ruff check ."
+_ruff_format = "ruff format --check ."
+test = "pytest tests/unit"
+cov = "pytest --cov --cov-report=term-missing"
+migrate = "alembic upgrade head"
+seed = "python scripts/load_db.py"
+
+[tool.poe.tasks.test-integration]
+help = "Create a temporary database on Compose Postgres and run integration tests"
+cmd = "pytest tests/integration"
+env.TEST_DATABASE_URL.default = "postgresql://app:app@localhost:5433/postgres"  # pragma: allowlist secret
