@@ -13,7 +13,20 @@ from hardenhelp.config import Settings
 def test_health_is_ok(client: TestClient) -> None:
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json() == {
+        "status": "ok",
+        "app": "hardenhelp",
+        "env": "ci",
+        "version": "dev",
+    }
+
+
+def test_health_reports_configured_commit(client: TestClient, settings: Settings) -> None:
+    settings.git_sha = "abc123"
+
+    response = client.get("/health")
+
+    assert response.json()["version"] == "abc123"
 
 
 def test_ready_when_database_is_available(client: TestClient) -> None:
