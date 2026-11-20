@@ -63,13 +63,17 @@ cheaper than a sequential scan.
 ### The image
 
 ```text
-hardenhelp:dev sha256:db285fab292c3b8867b3e9789d1b30d2853fcb7c64f58d9685a7cf0896c531ab 300MB
+> docker images hardenhelp:dev
+IMAGE            ID             DISK USAGE   CONTENT SIZE   EXTRA
+hardenhelp:dev   db285fab292c        300MB           70MB
+
+> docker run --rm hardenhelp:dev id
 uid=999(app) gid=999(app) groups=999(app)
 ```
 
 - Size: 300 MB (under the 400 MB target).
-- This validation build took 48.57 seconds; it was cache-assisted, so the first cold build time was
-  not measured.
+- A measured validation build took 48.57 seconds with cache. The first cold-build time and a
+  rebuild after changing one line were not captured.
 - BuildKit reused the unchanged uv-copy and workdir layers; it rebuilt the dependency stage after
   `uv.lock` changed.
 
