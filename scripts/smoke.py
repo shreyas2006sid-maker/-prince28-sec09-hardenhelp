@@ -57,6 +57,9 @@ def main() -> int:
     parser.add_argument("--interval", type=int, default=10)
     args = parser.parse_args()
 
+    if args.timeout <= 0 or args.interval <= 0:
+        parser.error("--timeout and --interval must be positive integers")
+
     base_url = args.base_url.rstrip("/")
 
     if args.expect_version and not wait_for_version(
