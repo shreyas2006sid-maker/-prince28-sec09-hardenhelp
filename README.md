@@ -1,22 +1,29 @@
+
 # HardenHelp
 
-HardenHelp explains Linux and Windows hardening rules from the DISA STIGs and the SCAP Security
-Guide: what a rule checks, why it matters and the exact fix for the right OS version.
+[![CI](https://github.com/shreyas2006sid-maker/prince28-sec09-hardenhelp/actions/workflows/ci.yml/badge.svg)](https://github.com/shreyas2006sid-maker/prince28-sec09-hardenhelp/actions/workflows/ci.yml)
+[![Live on Render](https://img.shields.io/badge/Live-Render-brightgreen)](https://hardenhelp.onrender.com)
 
-**Status:** Day 3 foundation (PostgreSQL, migrations, idempotent loader, FastAPI API).
+HardenHelp explains Linux and Windows hardening rules from the DISA STIGs and the SCAP Security Guide: what a rule checks, why it matters and the exact fix for the right OS version.
+
+**Status:** Deployed on Render. CI/CD pipeline and production smoke tests are passing.
+
+## Live deployment
+
+- **Live application:** https://hardenhelp.onrender.com
+- **API documentation:** https://hardenhelp.onrender.com/docs
+- **Health endpoint:** https://hardenhelp.onrender.com/health
+- **Readiness endpoint:** https://hardenhelp.onrender.com/ready
 
 ## Who it's for
 
-Junior system administrator at a Chennai fintech who must harden 30 Ubuntu 22.04 servers before a
-client security audit.
+Junior system administrator at a Chennai fintech who must harden 30 Ubuntu 22.04 servers before a client security audit.
 
 ## The problem
 
-STIG and SCAP requirements use overlapping but inconsistent identifiers across releases and OS
-families. Administrators must map a STIG ID, SV-ID, CCI or SSG rule name to the same requirement
-before applying a remediation. Security fixes can also change authentication or network behavior,
-so a blind change may disconnect a server or lock out administrators. HardenHelp keeps rule metadata
-and remediation commands together to support accurate, reviewed deployments.
+STIG and SCAP requirements use overlapping but inconsistent identifiers across releases and OS families. Administrators must map a STIG ID, SV-ID, CCI or SSG rule name to the same requirement before applying a remediation.
+
+Security fixes can also change authentication or network behavior, so a blind change may disconnect a server or lock out administrators. HardenHelp keeps rule metadata and remediation commands together to support accurate, reviewed deployments.
 
 ## Data sources
 
@@ -27,19 +34,40 @@ and remediation commands together to support accurate, reviewed deployments.
 
 ## Hardest problem
 
-The same requirement has several IDs and those IDs can change between OS releases. Exact-ID lookup
-must map identifiers consistently and always show the OS match and lock-out risk before a fix is
-applied.
+The same requirement has several IDs and those IDs can change between OS releases. Exact-ID lookup must map identifiers consistently and always show the OS match and lock-out risk before a fix is applied.
 
 ## Signature feature
 
-Rule card: enter a STIG, SV, CCI or SSG ID and see the mapped requirement, severity, check command,
-fix command and lock-out-risk badge.
+Rule card: enter a STIG, SV, CCI or SSG ID and see the mapped requirement, severity, check command, fix command and lock-out-risk badge.
 
 ## Target metric
 
-ID mapping correct for 100% of 50 cross-ID lookups; check and fix commands correct for at least 90%
-of 40 rules on a test VM.
+ID mapping correct for 100% of 50 cross-ID lookups; check and fix commands correct for at least 90% of 40 rules on a test VM.
+
+## Technology stack
+
+- Python 3.12
+- FastAPI
+- PostgreSQL with pgvector
+- SQLAlchemy
+- Alembic
+- Docker
+- GitHub Actions
+- GitHub Container Registry (GHCR)
+- Render
+
+## CI/CD and deployment
+
+The project uses GitHub Actions for continuous integration and deployment.
+
+- Pull requests trigger linting and automated tests.
+- Successful merges to `main` trigger the CI pipeline.
+- The Docker image is built and published to GitHub Container Registry.
+- The CD workflow deploys the image to Render.
+- Database migrations run before automatic production deployments.
+- Production smoke tests verify the deployed version and API endpoints.
+
+The deployment pipeline also supports manual deployment of a specified commit SHA for rollback and roll-forward operations.
 
 ## Run locally
 
@@ -54,9 +82,9 @@ uv run uvicorn hardenhelp.api.main:create_app --factory --reload --no-access-log
 
 Open http://localhost:8000/docs.
 
-The service starts even if Postgres is unreachable: `/health` remains a liveness check and
-`/ready` returns HTTP 503 until the database responds. Do not commit `.env`; `DATABASE_URL`
-contains database credentials.
+The service starts even if Postgres is unreachable: `/health` remains a liveness check and `/ready` returns HTTP 503 until the database responds.
+
+Do not commit `.env`; `DATABASE_URL` contains database credentials.
 
 ## Database workflow
 
@@ -70,12 +98,10 @@ uv run python scripts/explain.py ssg_rule sshd_disable_root_login
 ```
 
 The loader uses a SHA-256 fingerprint: repeated runs skip unchanged rows and update changed rows.
-`source_url` values point to ComplianceAsCode rule searches; confirm each rule against its upstream
-source before using the sample data for an audit.
 
-Integration tests create a unique temporary database, run the real migrations, and drop it after the
-test run. The server URL must allow creating databases; the Poe task defaults to the local Compose
-PostgreSQL server:
+`source_url` values point to ComplianceAsCode rule searches; confirm each rule against its upstream source before using the sample data for an audit.
+
+Integration tests create a unique temporary database, run the real migrations, and drop it after the test run. The server URL must allow creating databases; the Poe task defaults to the local Compose PostgreSQL server:
 
 ```powershell
 docker compose up -d db
@@ -100,15 +126,13 @@ You need Docker Desktop running. From a fresh clone:
 docker compose up --build
 ```
 
-This starts Postgres with pgvector and Redis, runs migrations and loads the sample data, then
-starts the API.
+This starts Postgres with pgvector and Redis, runs migrations and loads the sample data, then starts the API.
 
 - API docs: http://localhost:8000/docs
 - Liveness: http://localhost:8000/health
 - Readiness (checks the database): http://localhost:8000/ready
 
-Stop with `Ctrl+C`, then run `docker compose down`. Add `-v` only when you intend to delete the
-local database volume.
+Stop with `Ctrl+C`, then run `docker compose down`. Add `-v` only when you intend to delete the local database volume.
 
 ## Develop and test
 
