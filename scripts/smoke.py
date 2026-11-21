@@ -70,7 +70,12 @@ def main() -> int:
     ):
         return 1
 
-    endpoints = ["/health", "/ready", "/docs"]
+    endpoints = [
+        "/health",
+        "/ready",
+        "/v1/documents?limit=1",
+    ]
+
     results = [check_endpoint(base_url, path) for path in endpoints]
 
     if all(results):
