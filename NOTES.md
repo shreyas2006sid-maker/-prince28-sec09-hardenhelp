@@ -58,6 +58,8 @@ When would it switch to the GIN index? (1 line)
 When the table is large enough that index filtering returns a small fraction of the rows and is
 cheaper than a sequential scan.
 
+---
+
 ## D04 · Docker, Compose and tests
 
 ### The image
@@ -110,20 +112,99 @@ uv run poe cov               -> 18 passed, 7 skipped; TOTAL 84%
 with TEST_DATABASE_URL set   -> 25 passed; TOTAL 95%
 ```
 
-The unit count is 18 in this checkout. The untested request-failure logging path in
-`src/hardenhelp/api/middleware.py` (lines 19-30) is worth covering for observability. The database
-stats query in `src/hardenhelp/db/repository.py` (lines 77-81) also needs a real-Postgres test.
+The unit count is 18 in this checkout. The untested request-failure loggingpath is not covered by the current tests.
 
-### Fresh-volume Compose check
+---
+
+## D05 · CI/CD, Render deployment and rollback
+
+### Production deployment
+
+- Production URL: https://hardenhelp.onrender.com
+- API documentation: https://hardenhelp.onrender.com/docs
+- Health endpoint: https://hardenhelp.onrender.com/health
+- Readiness endpoint: https://hardenhelp.onrender.com/ready
+- Hosting: Render
+- Database: Neon PostgreSQL
+- Container registry: GitHub Container Registry (GHCR)
+
+### CI pipeline
+
+GitHub Actions runs CI for pull requests and pushes to `main`.
+
+The pipeline includes:
+- Linting and formatting checks.
+- Tests and coverage checks.
+- Docker image build.
+- Image publishing to GHCR after successful CI on `main`.
+
+### CD pipeline
+
+The CD workflow runs after successful CI on `main`.
+
+Deployment process:
+
+1. Check out the requested commit.
+2. Install project dependencies.
+3. Run production database migrations for automatic deployments.
+4. Trigger the Render deployment using the matching GHCR image.
+5. Run production smoke tests.
+
+The smoke test checks:
+- `/health`
+- `/ready`
+- `/v1/documents?limit=1`
+- The deployed Git commit SHA.
+
+### Health and readiness checks
+
+The `/health` endpoint supports GET and HEAD requests.
+
+The `/ready` endpoint checks database availability.
+
+- `/health` returns HTTP 200 when the application is running.
+- `/ready` returns HTTP 200 when the database is available.
+- `/ready` returns HTTP 503 when the database is unavailable.
+
+### Uptime monitoring
+
+- UptimeRobot monitors `https://hardenhelp.onrender.com/health`.
+- Monitoring interval: 5 minutes.
+- The monitor was verified as UP after adding HEAD support to the health endpoint.
+
+### Rollback drill
+
+Previous stable commit:
+
+`3152a2675d457c01e0fb3d433abfe58594d4c3b9`
+
+Rollback was performed using the manual CD workflow dispatch with the selected commit SHA.
+
+The production health endpoint reported the rollback version, and all smoke tests passed.
+
+After the rollback test, the application was deployed forward again to:
+
+`aa36240651d264908fd9228a50bb4783debf5635`
+
+The latest production smoke test passed:
 
 ```text
-new project: hardenhelp-clean-check
-db and redis: healthy
-migrate: Exited (0), records=20 inserted=20 updated=0 unchanged=0
-/ready: {"status":"ready","checks":{"database":true}}
+PASS: deployed version - aa36240651d264908fd9228a50bb4783debf5635
+PASS: /health - HTTP 200
+PASS: /ready - HTTP 200
+PASS: /v1/documents?limit=1 - HTTP 200
+
+All smoke tests passed!
 ```
 
-The temporary project and its volume were removed afterward; the existing `hardenhelp_pgdata`
-volume was preserved and the original stack was restored healthy. A literal Git clean-clone check
-is still pending because these changes have not been committed. The standalone Docker build used a
-307.68 kB context with `.dockerignore` in effect.
+### Main branch protection
+
+- Main branch protection ruleset: `protect-main`.
+- Pull requests are used to merge changes into `main`.
+- CI checks must pass before merging.
+
+### Deployment observations
+
+- Production deployment and smoke tests were verified.
+- The rollback and subsequent roll-forward were both verified.
+- Cold-start latency and first-request latency were not measured.
