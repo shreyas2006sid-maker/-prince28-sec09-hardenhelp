@@ -9,7 +9,7 @@ from hardenhelp.api.deps import check_db
 router = APIRouter()
 
 
-@router.get("/health")
+@router.api_route("/health", methods=["GET", "HEAD"])
 def health(request: Request) -> dict[str, str]:
     settings = request.app.state.settings
     return {
